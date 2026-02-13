@@ -1,191 +1,875 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>VideoShot</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VideoShot</title>
+  <style>
+    :root{
+      /* Toy palette (not rainbow) */
+      --yellow:#FFD84D;
+      --yellow-2:#FFE88A;
+      --red:#FF4D4D;
+      --red-2:#FF8A8A;
+      --green:#41B36B;
+      --green-2:#8FE3B0;
+      --blue:#2F66FF;
+      --blue-2:#79A6FF;
+      --orange:#FF9B2F;
+      --orange-2:#FFC27A;
 
-<style>
-body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#f8f3e8; /* soft pastel background */
-}
-
-/* HEADER */
-.header{
-    background:#ffd84d;
-    display:flex;
-    align-items:center;
-    padding:12px;
-}
-.header img{
-    height:48px;
-    margin-right:12px;
-}
-.header h1{
-    margin:0;
-    font-size:26px;
-}
-.subtext{
-    font-size:14px;
-}
-
-/* STITCH BORDER STYLE */
-.stitch{
-    border:4px dashed white;
-    border-radius:18px;
-    padding:20px;
-    margin:20px;
-}
-
-/* MAIN RED GROUP */
-.upload-group{
-    background:#e63946;
-    color:white;
-}
-
-/* YELLOW INFO BOX */
-.info-box{
-    background:#ffe66d;
-    color:black;
-    margin-top:15px;
-}
-
-/* GREEN SLIDER BOX */
-.slider-box{
-    background:#4caf50;
-    color:white;
-    margin-top:15px;
-}
-
-/* BEST SHOTS SECTION */
-.best-shots{
-    background:#7cc8ff;
-    color:white;
-}
-
-/* BUTTONS */
-button{
-    border:none;
-    padding:12px 20px;
-    border-radius:14px;
-    font-size:16px;
-    cursor:pointer;
-    color:white;
-}
-
-.preview-btn{
-    background:#2d6cdf;
-}
-.download-btn{
-    background:#e63946;
-}
-
-/* CUSTOM FILE INPUT */
-.file-wrapper{
-    margin-top:15px;
-}
-
-.file-wrapper input[type="file"]{
-    display:none;
-}
-
-.custom-file{
-    display:inline-block;
-    padding:14px 24px;
-    border-radius:14px;
-    font-weight:bold;
-    cursor:pointer;
-    background:linear-gradient(90deg,#ffd84d,#2d6cdf,#e63946);
-    color:white;
-    text-align:center;
-    box-shadow:0 4px 10px rgba(0,0,0,0.15);
-}
-.custom-file:hover{
-    opacity:0.9;
-}
-</style>
-</head>
-
-<body>
-
-<div class="header">
-    <img src="logo.png" alt="VideoShot Logo">
-    <div>
-        <h1>VideoShot</h1>
-        <div class="subtext">
-            5 stills ≤30s • 10 ≤60s • Max 20 • 10min max
-        </div>
-    </div>
-</div>
-
-<div class="stitch upload-group">
-    <h2>Upload Video</h2>
-
-    <div class="file-wrapper">
-        <label class="custom-file">
-            Choose Video
-            <input type="file" id="videoInput" accept="video/*">
-        </label>
-    </div>
-
-    <div class="stitch info-box">
-        <strong>Video Length:</strong> <span id="length">—</span><br>
-        <strong>Shots Selected:</strong> <span id="shots">5</span>
-    </div>
-
-    <div class="stitch slider-box">
-        <strong>Requested Shots</strong><br><br>
-        <input type="range" min="5" max="20" value="5" id="shotSlider">
-        <div id="sliderValue">5</div>
-    </div>
-</div>
-
-<div class="stitch best-shots">
-    <h2>Best Shots</h2>
-    <button class="preview-btn">Preview All</button>
-    <button class="download-btn">Download All</button>
-</div>
-
-<script>
-const videoInput = document.getElementById("videoInput");
-const lengthDisplay = document.getElementById("length");
-const shotsDisplay = document.getElementById("shots");
-const slider = document.getElementById("shotSlider");
-const sliderValue = document.getElementById("sliderValue");
-
-slider.addEventListener("input", () => {
-    sliderValue.innerText = slider.value;
-    shotsDisplay.innerText = slider.value;
-});
-
-videoInput.addEventListener("change", (event)=>{
-    const file = event.target.files[0];
-    if(!file) return;
-
-    const video = document.createElement("video");
-    video.preload = "metadata";
-    video.onloadedmetadata = function(){
-        const duration = video.duration;
-        lengthDisplay.innerText = duration.toFixed(2)+"s";
-
-        if(duration <= 30){
-            slider.max = 5;
-            slider.value = 5;
-        }else if(duration <= 60){
-            slider.max = 10;
-            slider.value = 10;
-        }else{
-            slider.max = 20;
-            slider.value = 20;
-        }
-
-        sliderValue.innerText = slider.value;
-        shotsDisplay.innerText = slider.value;
+      --ink:#1f2330;
+      --cream:#FFF2D8;
+      --sky:#CFEFFF;
+      --card:#FFFFFF; /* used sparingly inside inputs */
+      --stitch:#FFFFFF;
+      --shadow: 0 14px 40px rgba(0,0,0,.15);
+      --radius: 22px;
     }
-    video.src = URL.createObjectURL(file);
-});
-</script>
 
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 800px at 20% 0%, rgba(255,255,255,.8) 0%, rgba(255,255,255,0) 50%),
+        radial-gradient(900px 700px at 90% 10%, rgba(255,255,255,.7) 0%, rgba(255,255,255,0) 55%),
+        linear-gradient(135deg, var(--sky) 0%, var(--cream) 55%, #FFE7F1 100%);
+    }
+
+    .wrap{max-width:980px;margin:0 auto;padding:18px 16px 48px}
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px;
+      padding:14px 14px;
+      background: linear-gradient(90deg, var(--yellow) 0%, var(--yellow-2) 100%);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      border: 6px solid rgba(255,255,255,.55);
+    }
+    .brand{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand img{
+      width:44px;height:44px;object-fit:contain;
+      border-radius: 12px;
+      background: rgba(255,255,255,.55);
+      padding:6px;
+    }
+    .brand h1{margin:0;font-size:26px;letter-spacing:.2px}
+    .brand .sub{
+      font-size:13px; opacity:.9; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .brandText{display:flex;flex-direction:column;min-width:0}
+
+    .btn{
+      border:0; cursor:pointer;
+      border-radius: 16px;
+      padding:11px 14px;
+      font-weight:800;
+      box-shadow: 0 10px 22px rgba(0,0,0,.14);
+      display:inline-flex; align-items:center; gap:10px;
+      transition: transform .06s ease;
+      user-select:none;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn-ghost{
+      background: rgba(255,255,255,.55);
+      color: var(--ink);
+      border: 4px solid rgba(255,255,255,.9);
+      box-shadow:none;
+    }
+    .btn-blue{background: linear-gradient(180deg, var(--blue-2), var(--blue)); color:#fff}
+    .btn-red{background: linear-gradient(180deg, var(--red-2), var(--red)); color:#fff}
+    .btn-orange{background: linear-gradient(180deg, var(--orange-2), var(--orange)); color:#1b1b1b}
+    .btn-green{background: linear-gradient(180deg, var(--green-2), var(--green)); color:#fff}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+      margin-top:16px;
+    }
+    @media (min-width: 820px){
+      .grid{grid-template-columns: 1.05fr .95fr}
+    }
+
+    .panel{
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      position: relative;
+      padding: 18px;
+      overflow:hidden;
+    }
+
+    /* stitched border (white) */
+    .panel::before{
+      content:"";
+      position:absolute; inset:10px;
+      border-radius: calc(var(--radius) - 10px);
+      border: 4px dashed rgba(255,255,255,.95);
+      pointer-events:none;
+      opacity:.95;
+    }
+    .panel::after{
+      content:"";
+      position:absolute; inset:0;
+      border-radius: var(--radius);
+      border: 6px solid rgba(255,255,255,.40);
+      pointer-events:none;
+    }
+
+    .panel-red{background: linear-gradient(180deg, #ff5b5b, #ff3b3b)}
+    .panel-green{background: linear-gradient(180deg, #59c77f, #35a763)}
+    .panel-blue{background: linear-gradient(180deg, #4a80ff, #2f66ff)}
+    .panel-orange{background: linear-gradient(180deg, #ffb154, #ff9b2f)}
+    .panel-yellow{background: linear-gradient(180deg, #ffe06a, #ffd84d)}
+
+    .panel h2{margin:0 0 10px 0; font-size:22px; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.10)}
+    .panel p{margin:8px 0 0 0; color:#0f1422; font-weight:700}
+
+    /* Inner boxes */
+    .innerRow{display:grid; grid-template-columns:1fr; gap:12px; margin-top:12px}
+    @media (min-width: 560px){
+      .innerRow{grid-template-columns: 1fr 1fr}
+      .innerRow.full{grid-template-columns:1fr}
+    }
+
+    .tile{
+      background: rgba(255,255,255,.22);
+      border-radius: 18px;
+      padding: 12px 12px;
+      position: relative;
+      overflow:hidden;
+      min-height: 74px;
+    }
+    .tile::before{
+      content:"";
+      position:absolute; inset:10px;
+      border-radius: 14px;
+      border: 3px dashed rgba(255,255,255,.9);
+      pointer-events:none;
+      opacity:.95;
+    }
+    .tile strong{display:block; font-size:15px; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.10)}
+    .tile .val{font-size:20px; font-weight:900; margin-top:6px; color:#0f1422}
+    .tile .hint{font-size:12px; font-weight:800; opacity:.9; margin-top:2px}
+
+    .tile-blue{background: rgba(47,102,255,.26)}
+    .tile-yellow{background: rgba(255,216,77,.30)}
+    .tile-green{background: rgba(65,179,107,.25)}
+    .tile-orange{background: rgba(255,155,47,.26)}
+    .tile-red{background: rgba(255,77,77,.22)}
+
+    /* File input */
+    .fileRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .fileRow input[type="file"]{
+      max-width:100%;
+      padding:10px 10px;
+      background: linear-gradient(180deg, var(--red-2), var(--red));
+      color:#fff;
+      border-radius: 14px;
+      border: 5px solid rgba(255,255,255,.85);
+      font-weight:800;
+    }
+    .fileRow .mini{font-size:12px; font-weight:900; color:#fff; opacity:.95}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+      border: 4px solid rgba(255,255,255,.9);
+      font-weight:900;
+    }
+
+    /* Slider */
+    .sliderWrap{margin-top:8px}
+    input[type="range"]{width:100%}
+
+    /* Results */
+    .actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .shotsGrid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:12px;
+    }
+    @media (min-width:560px){ .shotsGrid{grid-template-columns: repeat(3, 1fr)} }
+    @media (min-width:920px){ .shotsGrid{grid-template-columns: repeat(4, 1fr)} }
+
+    .shotCard{
+      background: rgba(255,255,255,.25);
+      border-radius: 18px;
+      padding:10px;
+      position:relative;
+      overflow:hidden;
+    }
+    .shotCard::before{
+      content:"";
+      position:absolute; inset:8px;
+      border-radius: 14px;
+      border: 3px dashed rgba(255,255,255,.95);
+      pointer-events:none;
+    }
+    /* playful multi-border around images */
+    .shotFrame{
+      border-radius: 14px;
+      overflow:hidden;
+      border: 6px solid rgba(255,255,255,.95);
+      outline: 6px solid rgba(47,102,255,.85);
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+      background: rgba(255,255,255,.45);
+    }
+    .shotFrame.alt1{ outline-color: rgba(255,77,77,.85) }
+    .shotFrame.alt2{ outline-color: rgba(255,155,47,.88) }
+    .shotFrame.alt3{ outline-color: rgba(65,179,107,.85) }
+
+    .shotFrame img{display:block; width:100%; height:auto}
+    .badge{
+      position:absolute;
+      top:10px; left:10px;
+      background: rgba(255,255,255,.9);
+      color: var(--ink);
+      font-weight:1000;
+      border-radius: 999px;
+      padding:6px 10px;
+      border: 3px solid rgba(0,0,0,.08);
+    }
+    .score{
+      position:absolute;
+      top:10px; right:10px;
+      background: rgba(0,0,0,.55);
+      color:#fff;
+      font-weight:900;
+      border-radius: 999px;
+      padding:6px 10px;
+      border: 3px solid rgba(255,255,255,.25);
+    }
+    .small{font-size:12px; font-weight:800; opacity:.95}
+    .status{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      border: 4px solid rgba(255,255,255,.9);
+      font-weight:900;
+    }
+
+    /* Modal */
+    .modalBack{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:50;
+    }
+    .modal{
+      width:min(980px, 96vw);
+      max-height: 90vh;
+      overflow:auto;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.80));
+      border: 6px solid rgba(255,255,255,.75);
+      box-shadow: 0 22px 70px rgba(0,0,0,.35);
+      padding:14px;
+      position:relative;
+    }
+    .modalTop{
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      padding:6px 6px 10px 6px;
+    }
+    .x{
+      width:44px;height:44px;border-radius:14px;
+      border:0; cursor:pointer;
+      background: linear-gradient(180deg, var(--red-2), var(--red));
+      color:#fff; font-weight:1000; font-size:18px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+    }
+    .modalGrid{
+      display:grid; gap:12px;
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (min-width:700px){ .modalGrid{grid-template-columns: repeat(3, 1fr)} }
+    @media (min-width:980px){ .modalGrid{grid-template-columns: repeat(4, 1fr)} }
+    .muted{opacity:.85; font-weight:800}
+    a{color:inherit}
+  
+    .srOnly{
+      position:absolute!important;
+      width:1px!important;height:1px!important;
+      padding:0!important;margin:-1px!important;
+      overflow:hidden!important;clip:rect(0,0,0,0)!important;
+      white-space:nowrap!important;border:0!important;
+    }
+
+    /* Custom "Choose video" button (works consistently on mobile) */
+    .fileInputHidden{
+      position:absolute;
+      left:-9999px;
+      width:1px;height:1px;
+      opacity:0;
+    }
+    .chooseBtn{
+      background: linear-gradient(90deg, var(--yellow) 0%, var(--blue) 52%, var(--red) 100%);
+      color:#0f1422;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-weight: 1000;
+      border: 5px solid rgba(255,255,255,.9);
+      box-shadow: 0 10px 22px rgba(0,0,0,.14);
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
+      user-select:none;
+      text-shadow:none;
+    }
+    .chooseBtn:active{ transform: translateY(1px); }
+    .chooseIcon{
+      width:22px;height:22px;
+      border-radius:8px;
+      background: rgba(255,255,255,.7);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1000;
+    }
+    .fileNamePill{
+      max-width: min(420px, 90vw);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <img src="logo.png" alt="VideoShot" id="brandLogo" />
+        <div class="brandText">
+          <h1 class="srOnly">VideoShot</h1>
+          <div class="sub srOnly">Extract clear frames from your video — runs in your browser.</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost" id="openSettings">⚙️ Settings</button>
+    </header>
+
+    <div class="grid">
+      <section class="panel panel-red">
+        <h2>Upload Video</h2>
+
+        <div class="fileRow">
+          <input id="file" class="fileInputHidden" type="file" accept="video/*" />
+          <label class="chooseBtn" for="file" aria-label="Choose a video">
+            <span class="chooseIcon">＋</span>
+            <span>Choose video</span>
+          </label>
+          <span class="pill fileNamePill" id="fileNamePill">No file chosen</span>
+          <span class="pill" id="privacyPill">🔒 Runs in your browser</span>
+        </div>
+
+        <!-- Red group content -->
+        <div class="innerRow">
+          <div class="tile tile-yellow">
+            <strong>Video Length</strong>
+            <div class="val" id="lenVal">—</div>
+            <div class="hint" id="lenHint">Tip: for best results, try ≥ 5 seconds</div>
+          </div>
+          <div class="tile tile-orange">
+            <strong>Shots Selected</strong>
+            <div class="val" id="pickedVal">—</div>
+            <div class="hint" id="pickedHint">Always at least 5</div>
+          </div>
+        </div>
+
+        <div class="tile tile-green" style="margin-top:12px">
+          <strong>Requested Shots</strong>
+          <div class="sliderWrap">
+            <input id="shots" type="range" min="5" max="20" step="1" value="5" />
+            <div class="val" id="shotsVal">5</div>
+            <div class="hint" id="capHint">Max depends on video length.</div>
+          </div>
+        </div>
+
+        <div class="status" id="status">Pick a video to start.</div>
+      </section>
+
+      <section class="panel panel-green">
+        <h2>Best Shots</h2>
+        <div class="actions">
+          <button class="btn btn-blue" id="previewAll" disabled>▶️ Preview All</button>
+          <button class="btn btn-red" id="downloadAll" disabled>⬇️ Download All</button>
+          <span class="pill" id="rulesPill">5 stills ≤30s • 10 ≤60s • max 20 • 10 min max</span>
+        </div>
+
+        <div class="shotsGrid" id="grid"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="modalBack" id="modalBack" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalTop">
+        <div>
+          <div style="font-size:18px;font-weight:1000">Settings</div>
+          <div class="muted">Change how many shots you want. Your choice stays locked until you change it.</div>
+        </div>
+        <button class="x" id="closeModal">✕</button>
+      </div>
+
+      <div class="panel panel-blue" style="box-shadow:none; margin:0; padding:16px">
+        <h2 style="margin-bottom:8px">Shot Rules</h2>
+        <div class="innerRow full">
+          <div class="tile tile-yellow">
+            <strong>Default shots</strong>
+            <div class="small">
+              ≤30s → 5 shots<br/>
+              ≤60s → 10 shots<br/>
+              Longer → about 1 shot per 6 seconds (quality first)
+            </div>
+          </div>
+          <div class="tile tile-orange">
+            <strong>Max shots</strong>
+            <div class="small">
+              Max shots = ceil(0.67 × video seconds), capped at 20.
+              <br/>Example: 60s → up to 41 requested, but app caps at 20.
+            </div>
+          </div>
+          <div class="tile tile-green">
+            <strong>Privacy</strong>
+            <div class="small">
+              Videos stay in your device memory while the page is open.
+              If you refresh/close the tab, they’re gone unless you downloaded your stills.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:10px 6px 2px 6px" class="muted">
+        This is a static site—no server storage by default.
+      </div>
+
+      <div class="modalGrid" id="modalGrid" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- JSZip for download -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    // ---------- Helpers ----------
+    const $ = (id) => document.getElementById(id);
+
+    // Logo fallback: if logo.png can't load, show a simple text badge instead of broken image.
+    window.addEventListener("load", () => {
+      const img = $("brandLogo");
+      if (!img) return;
+      img.addEventListener("error", () => {
+        img.style.display = "none";
+        const fallback = document.createElement("div");
+        fallback.className = "pill";
+        fallback.textContent = "VideoShot";
+        img.parentElement.insertBefore(fallback, img.nextSibling);
+      }, {once:true});
+    });
+
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+    function ceil(n){ return Math.ceil(n); }
+
+    function computeMaxShots(seconds){
+      // 67% of seconds, rounded up, but cap at 20 and floor at 5
+      const maxByRule = ceil(0.67 * seconds);
+      return clamp(maxByRule, 5, 20);
+    }
+
+    function defaultShots(seconds){
+      if (seconds <= 30) return 5;
+      if (seconds <= 60) return 10;
+      // about 1/6 rate, quality first
+      return clamp(ceil(seconds / 6), 10, 20);
+    }
+
+    function formatSec(s){
+      if (!isFinite(s) || s <= 0) return "—";
+      return s.toFixed(2) + "s";
+    }
+
+    function setStatus(msg){ $("status").textContent = msg; }
+
+    // Simple sharpness score using Laplacian variance on a small grayscale buffer
+    function sharpnessScore(imageData){
+      const {data, width:w, height:h} = imageData;
+      const gray = new Float32Array(w*h);
+      for (let i=0, p=0; i<data.length; i+=4, p++){
+        gray[p] = 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
+      }
+      let sum=0, sum2=0, count=0;
+      // Laplacian kernel approx: center*4 - neighbors
+      for (let y=1; y<h-1; y++){
+        for (let x=1; x<w-1; x++){
+          const i = y*w + x;
+          const lap = 4*gray[i] - gray[i-1] - gray[i+1] - gray[i-w] - gray[i+w];
+          sum += lap;
+          sum2 += lap*lap;
+          count++;
+        }
+      }
+      const mean = sum / (count || 1);
+      const varr = (sum2 / (count || 1)) - mean*mean;
+      return Math.max(0, varr);
+    }
+
+    function brightnessScore(imageData){
+      const {data} = imageData;
+      let sum=0, count=0;
+      for (let i=0;i<data.length;i+=16){ // stride for speed
+        sum += 0.2126*data[i] + 0.7152*data[i+1] + 0.0722*data[i+2];
+        count++;
+      }
+      const mean = sum/(count||1);
+      // prefer mid-to-bright, penalize too dark
+      return mean;
+    }
+
+    async function faceScore(canvas){
+      // Optional: use FaceDetector if supported. Returns number of faces (0..)
+      if (!("FaceDetector" in window)) return 0;
+      try{
+        const detector = new FaceDetector({fastMode:true, maxDetectedFaces: 3});
+        const faces = await detector.detect(canvas);
+        return faces.length || 0;
+      }catch(e){
+        return 0;
+      }
+    }
+
+    function dataUrlToBlob(dataUrl){
+      const [meta, b64] = dataUrl.split(",");
+      const mime = meta.match(/data:(.*?);base64/)[1] || "image/png";
+      const bin = atob(b64);
+      const arr = new Uint8Array(bin.length);
+      for (let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], {type:mime});
+    }
+
+    // ---------- State ----------
+    let videoFile = null;
+    let videoURL = null;
+    let durationSec = 0;
+    let userLocked = false;           // user changed slider
+    let stills = [];                  // {dataUrl, score, t, idx}
+    let lastComputedMax = 20;
+
+    // Persist slider + lock across refresh (optional)
+    const LS_KEY = "videoshot_requested";
+    const LS_LOCK = "videoshot_locked";
+
+    function loadPersisted(){
+      const v = parseInt(localStorage.getItem(LS_KEY) || "", 10);
+      const locked = localStorage.getItem(LS_LOCK) === "1";
+      if (Number.isFinite(v)) $("shots").value = String(clamp(v, 5, 20));
+      $("shotsVal").textContent = $("shots").value;
+      userLocked = locked;
+    }
+    loadPersisted();
+
+    function persist(){
+      localStorage.setItem(LS_KEY, $("shots").value);
+      localStorage.setItem(LS_LOCK, userLocked ? "1" : "0");
+    }
+
+    // Slider behavior: lock in user selection and NEVER auto-reset it
+    $("shots").addEventListener("input", () => {
+      userLocked = true;
+      $("shotsVal").textContent = $("shots").value;
+      persist();
+      updatePickedHint();
+    });
+
+    function updatePickedHint(){
+      $("pickedHint").textContent = userLocked ? "Locked (won’t auto-reset)" : "Auto (defaults based on length)";
+    }
+    updatePickedHint();
+
+    // Settings modal
+    const modalBack = $("modalBack");
+    $("openSettings").addEventListener("click", () => { modalBack.style.display="flex"; });
+    $("closeModal").addEventListener("click", () => { modalBack.style.display="none"; });
+    modalBack.addEventListener("click", (e) => { if (e.target === modalBack) modalBack.style.display="none"; });
+
+    // ---------- Video load ----------
+    $("file").addEventListener("change", async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+
+      // Show selected file name clearly for all audiences
+      const nameEl = $("fileNamePill");
+      if (nameEl) nameEl.textContent = f.name || "Selected video";
+
+      videoFile = f;
+      if (videoURL) URL.revokeObjectURL(videoURL);
+      videoURL = URL.createObjectURL(f);
+
+      setStatus("Reading video…");
+      $("grid").innerHTML = "";
+      stills = [];
+      $("previewAll").disabled = true;
+      $("downloadAll").disabled = true;
+      $("pickedVal").textContent = "—";
+
+      // Create a hidden video to read duration + extract frames by seeking
+      const v = document.createElement("video");
+      v.preload = "metadata";
+      v.muted = true;
+      v.playsInline = true;
+      v.src = videoURL;
+      try { v.load(); } catch(e) {}
+
+      await new Promise((resolve, reject) => {
+        v.onloadedmetadata = resolve;
+        v.onerror = () => reject(new Error("Could not read video metadata."));
+      }).catch(err => {
+        console.error(err);
+        setStatus("Couldn’t read the video. Try a different file.");
+      });
+
+      durationSec = Number(v.duration) || 0;
+      $("lenVal").textContent = formatSec(durationSec);
+
+      // Update slider caps based on video length
+      lastComputedMax = computeMaxShots(durationSec || 1);
+      $("shots").max = String(lastComputedMax);
+
+      // If user hasn't locked, set a smart default. If locked, keep their choice (clamped).
+      if (!userLocked){
+        $("shots").value = String(clamp(defaultShots(durationSec || 1), 5, lastComputedMax));
+      } else {
+        $("shots").value = String(clamp(parseInt($("shots").value,10)||5, 5, lastComputedMax));
+      }
+      $("shotsVal").textContent = $("shots").value;
+
+      // Cap hint
+      $("capHint").textContent = `Max for this video: ${lastComputedMax} shots`;
+
+      // Auto-run extraction as soon as metadata is ready
+      setStatus("Working… extracting frames");
+      await extractBestFrames(v);
+
+      // cleanup video element URL usage is fine; keep v for extraction already done
+    });
+
+    // ---------- Core extraction ----------
+    async function seekTo(videoEl, t){
+      return new Promise((resolve, reject) => {
+        const onSeeked = () => { cleanup(); resolve(); };
+        const onError = () => { cleanup(); reject(new Error("seek failed")); };
+        const cleanup = () => {
+          videoEl.removeEventListener("seeked", onSeeked);
+          videoEl.removeEventListener("error", onError);
+        };
+        videoEl.addEventListener("seeked", onSeeked, {once:true});
+        videoEl.addEventListener("error", onError, {once:true});
+        // Some browsers need a tiny nudge away from exact end
+        const safeT = Math.min(Math.max(0, t), Math.max(0, videoEl.duration - 0.05));
+        videoEl.currentTime = safeT;
+      });
+    }
+
+    async function grabFrame(videoEl, canvas, ctx){
+      // draw current frame
+      const vw = videoEl.videoWidth || 0;
+      const vh = videoEl.videoHeight || 0;
+      if (!vw || !vh) return null;
+
+      // Downscale for scoring but keep a higher-res export canvas
+      const exportW = Math.min(1280, vw);
+      const exportH = Math.round(exportW * (vh/vw));
+      canvas.width = exportW;
+      canvas.height = exportH;
+      ctx.drawImage(videoEl, 0, 0, exportW, exportH);
+
+      // score on a small buffer
+      const scoreCanvas = document.createElement("canvas");
+      const sw = 240;
+      const sh = Math.round(sw * (exportH/exportW));
+      scoreCanvas.width = sw;
+      scoreCanvas.height = sh;
+      const sctx = scoreCanvas.getContext("2d", {willReadFrequently:true});
+      sctx.drawImage(canvas, 0, 0, sw, sh);
+
+      const imgData = sctx.getImageData(0,0,sw,sh);
+      const sharp = sharpnessScore(imgData);
+      const bright = brightnessScore(imgData);
+      const faces = await faceScore(scoreCanvas);
+
+      // Weighted score: sharpness heavy, faces bonus, brightness moderate
+      const score = (sharp/1000) + (faces * 2.5) + (bright/70);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      return {dataUrl, score, faces, bright, sharp};
+    }
+
+    async function extractBestFrames(videoEl){
+      const req = clamp(parseInt($("shots").value,10) || 5, 5, lastComputedMax);
+      const seconds = Math.max(0.5, durationSec || 0.5);
+
+      // Candidates to sample: oversample by ~3x, but cap for performance
+      const candidates = clamp(req * 3, req, 60);
+
+      // Avoid first/last 2% (often fades)
+      const start = seconds * 0.02;
+      const end = seconds * 0.98;
+      const span = Math.max(0.2, end - start);
+
+      const times = [];
+      for (let i=0; i<candidates; i++){
+        times.push(start + (span * i/(candidates-1)));
+      }
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", {willReadFrequently:true});
+
+      const scored = [];
+      let okCount = 0;
+
+      for (let i=0; i<times.length; i++){
+        $("pickedVal").textContent = String(okCount);
+        setStatus(`Working… ${Math.min(100, Math.round((i/times.length)*100))}%`);
+        try{
+          await seekTo(videoEl, times[i]);
+          const res = await grabFrame(videoEl, canvas, ctx);
+          if (res){
+            scored.push({t: times[i], ...res});
+            okCount++;
+          }
+        }catch(e){
+          // ignore individual seek failures
+        }
+      }
+
+      // If we somehow got nothing, force-capture 5 evenly spaced attempts
+      if (scored.length === 0){
+        setStatus("Working… forcing 5 frames");
+        const forced = 5;
+        for (let i=0;i<forced;i++){
+          const t = start + (span * i/(forced-1));
+          try{
+            await seekTo(videoEl, t);
+            const res = await grabFrame(videoEl, canvas, ctx);
+            if (res) scored.push({t, ...res});
+          }catch(e){}
+        }
+      }
+
+      // Sort and pick top N. Always return at least 5 if possible.
+      scored.sort((a,b) => b.score - a.score);
+
+      const need = Math.max(5, req);
+      const picked = scored.slice(0, need);
+
+      // If we still don't have 5 (super rare), duplicate best
+      while (picked.length < 5 && scored.length > 0){
+        picked.push(scored[0]);
+      }
+
+      stills = picked.map((s, idx) => ({...s, idx: idx+1}));
+
+      renderStills();
+      $("pickedVal").textContent = String(stills.length);
+      setStatus(`Done. Picked ${stills.length} shots.`);
+      $("previewAll").disabled = stills.length === 0;
+      $("downloadAll").disabled = stills.length === 0;
+    }
+
+    function renderStills(){
+      const grid = $("grid");
+      grid.innerHTML = "";
+
+      stills.forEach((s, i) => {
+        const card = document.createElement("div");
+        card.className = "shotCard";
+
+        const frame = document.createElement("div");
+        frame.className = "shotFrame " + (i%4===1 ? "alt1" : i%4===2 ? "alt2" : i%4===3 ? "alt3" : "");
+        const img = document.createElement("img");
+        img.src = s.dataUrl;
+        img.alt = "Shot " + (i+1);
+        frame.appendChild(img);
+
+        const badge = document.createElement("div");
+        badge.className = "badge";
+        badge.textContent = (i+1);
+
+        const score = document.createElement("div");
+        score.className = "score";
+        // keep it simple (no techy labels)
+        score.textContent = "★ " + Math.max(1, Math.min(99, Math.round(s.score*8))).toString();
+
+        card.appendChild(frame);
+        card.appendChild(badge);
+        card.appendChild(score);
+
+        grid.appendChild(card);
+      });
+
+      // also populate modal preview grid
+      const mg = $("modalGrid");
+      mg.innerHTML = "";
+      stills.forEach((s, i) => {
+        const wrap = document.createElement("div");
+        wrap.className = "shotFrame " + (i%4===1 ? "alt1" : i%4===2 ? "alt2" : i%4===3 ? "alt3" : "");
+        const im = document.createElement("img");
+        im.src = s.dataUrl;
+        im.alt = "Shot " + (i+1);
+        wrap.appendChild(im);
+        mg.appendChild(wrap);
+      });
+    }
+
+    // ---------- Preview / Download ----------
+    $("previewAll").addEventListener("click", () => {
+      if (!stills.length) return;
+      modalBack.style.display = "flex";
+    });
+
+    $("downloadAll").addEventListener("click", async () => {
+      if (!stills.length) return;
+      setStatus("Preparing download…");
+
+      // Zip all images
+      const zip = new JSZip();
+      stills.forEach((s, i) => {
+        const blob = dataUrlToBlob(s.dataUrl);
+        const name = `videoshot_${String(i+1).padStart(2,"0")}.jpg`;
+        zip.file(name, blob);
+      });
+
+      const out = await zip.generateAsync({type:"blob"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(out);
+      a.download = "videoshot_stills.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setStatus("Download started.");
+    });
+
+    // Make sure the slider max + selection stays stable if user changes it AFTER load
+    // (just clamp and keep locked)
+    $("shots").addEventListener("change", () => {
+      const v = clamp(parseInt($("shots").value,10)||5, 5, parseInt($("shots").max,10)||20);
+      $("shots").value = String(v);
+      $("shotsVal").textContent = String(v);
+      userLocked = true;
+      persist();
+      updatePickedHint();
+    });
+
+    // When the page loads, keep UI consistent with locked state
+    window.addEventListener("load", () => updatePickedHint());
+  </script>
 </body>
 </html>
