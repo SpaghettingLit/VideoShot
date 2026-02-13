@@ -50,12 +50,7 @@
       border: 6px solid rgba(255,255,255,.55);
     }
     .brand{display:flex;align-items:center;gap:12px;min-width:0}
-    .brand img{
-      width:44px;height:44px;object-fit:contain;
-      border-radius: 12px;
-      background: rgba(255,255,255,.55);
-      padding:6px;
-    }
+    .brand img{width:min(220px,60vw);height:auto;border-radius:0;padding:0;background:none;box-shadow:none;}
     .brand h1{margin:0;font-size:26px;letter-spacing:.2px}
     .brand .sub{
       font-size:13px; opacity:.9; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -349,12 +344,7 @@
       width: 100%;
       justify-content: center;
     }
-    .brand img#brandLogo{
-      width: min(220px, 60vw);
-      height: auto;
-      padding: 8px;
-      border-radius: 18px;
-    }
+    .brand img#brandLogo{width:min(220px,60vw);height:auto;border-radius:0;padding:0;background:none;box-shadow:none;}
     /* Make header act like a top hero that slides away when you scroll */
     header{
       position: sticky;
@@ -378,6 +368,18 @@
       backdrop-filter: blur(6px);
     }
 
+  
+    .gearBtn{
+      background: linear-gradient(180deg, var(--orange-2), var(--orange));
+      border-radius: 14px;
+      border: 5px solid rgba(255,255,255,.9);
+      font-size: 20px;
+      padding: 10px 14px;
+      cursor:pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.15);
+    }
+    .gearBtn:active{ transform: translateY(1px); }
+
   </style>
 </head>
 <body>
@@ -390,7 +392,7 @@
           <div class="sub srOnly">Extract clear frames from your video — runs in your browser.</div>
         </div>
       </div>
-      <button class="btn btn-ghost" id="openSettings">⚙️ Settings</button>
+      
     </header>
 
     <div class="grid">
@@ -403,6 +405,7 @@
             <span class="chooseIcon">＋</span>
             <span>Choose video</span>
           </label>
+          <button id="openSettings" class="gearBtn" aria-label="Settings">⚙️</button>
           <span class="pill fileNamePill" id="fileNamePill">No file chosen</span>
           <span class="pill" id="privacyPill">🔒 Runs in your browser</span>
         </div>
@@ -517,10 +520,10 @@
         const y = window.scrollY || 0;
         if (y > 40){
           header && header.classList.add("logoHidden");
-          settingsBtn && settingsBtn.classList.add("floating");
+          
         } else {
           header && header.classList.remove("logoHidden");
-          settingsBtn && settingsBtn.classList.remove("floating");
+          
         }
       };
       window.addEventListener("scroll", onScroll, {passive:true});
